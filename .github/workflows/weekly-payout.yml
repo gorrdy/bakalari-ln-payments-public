@@ -1,0 +1,54 @@
+name: Weekly Bakalari LN Payout
+
+on:
+  schedule:
+    # Spouštění každé pondělí ve 12:00 UTC (13:00 nebo 14:00 CET/CEST)
+    - cron: "0 12 * * 1" 
+  workflow_dispatch: # Povoluje ruční spuštění
+
+# GLOBÁLNÍ OPRÁVNĚNÍ: contents: write je pro jistotu zachováno, ale klíčové je použití PAT
+permissions:
+  contents: write
+
+jobs:
+  payout:
+    runs-on: ubuntu-latest
+    
+    env:
+      # 🚀 KRITICKÁ ZMĚNA: Používáme Váš silnější PAT token pro přístup k Variables
+      GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }} 
+      # --- BAKALÁŘI SECRETS ---
+      BAKALARI_BASE_URL: ${{ secrets.BAKALARI_BASE_URL }}
+      BAKALARI_USERNAME: ${{ secrets.BAKALARI_USERNAME }}
+      BAKALARI_PASSWORD: ${{ secrets.BAKALARI_PASSWORD }}
+      # --- LNBITS SECRETS ---
+      LNBITS_HOST: ${{ secrets.LNBITS_HOST }}
+      LNBITS_WITHDRAW_KEY: ${{ secrets.LNBITS_WITHDRAW_KEY }}
+      # --- SMTP SECRETS ---
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      # --- VARIABLES (VARS) ---
+      EXCHANGE_RATE_API_URL: ${{ vars.EXCHANGE_RATE_API_URL }}
+      START_DATE: 2025-11-01
+      REWARD_GRADE_1_CZK: ${{ vars.REWARD_GRADE_1_CZK }}
+      REWARD_GRADE_2_CZK: ${{ vars.REWARD_GRADE_2_CZK }}
+      REWARD_GRADE_3_CZK: ${{ vars.REWARD_GRADE_3_CZK }}
+      REWARD_GRADE_4_CZK: ${{ vars.REWARD_GRADE_4_CZK }}
+      REWARD_GRADE_5_CZK: ${{ vars.REWARD_GRADE_5_CZK }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run payout script
+        run: node index.js

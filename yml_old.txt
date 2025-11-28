@@ -1,0 +1,72 @@
+
+name: Weekly Bakalari LN Payout
+
+on:
+  schedule:
+    - cron: "0 12 * * 1" # Každé pondělí ve 12:00
+  workflow_dispatch: # Manuální spuštění
+
+jobs:
+  payout:
+    runs-on: ubuntu-latest
+    
+    # Konsolidace všech proměnných do jednoho bloku
+    env:
+      # --- BAKALÁŘI SECRETS ---
+      BAKALARI_BASE_URL: ${{ secrets.BAKALARI_BASE_URL }}
+      BAKALARI_USERNAME: ${{ secrets.BAKALARI_USERNAME }}
+      BAKALARI_PASSWORD: ${{ secrets.BAKALARI_PASSWORD }}
+      
+      # --- LNBits SECRETS & KONFIGURACE ---
+      LNBITS_HOST: ${{ secrets.LNBITS_HOST }}
+      LNBITS_WITHDRAW_KEY: ${{ secrets.LNBITS_WITHDRAW_KEY }}
+      LNBITS_WITHDRAW_ENDPOINT: /withdraw/api/v1/links
+      EXCHANGE_RATE_API_URL: ${{ vars.EXCHANGE_RATE_API_URL }}
+      
+      # --- SMTP SECRETS & NOTIFIKACE ---
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      
+      # --- ODMĚNY A START DATE ---
+      START_DATE: 2025-11-01
+      REWARD_GRADE_1_CZK: ${{ vars.REWARD_GRADE_1_CZK }}
+      REWARD_GRADE_2_CZK: ${{ vars.REWARD_GRADE_2_CZK }}
+      REWARD_GRADE_3_CZK: ${{ vars.REWARD_GRADE_3_CZK }}
+      REWARD_GRADE_4_CZK: ${{ vars.REWARD_GRADE_4_CZK }}
+      REWARD_GRADE_5_CZK: ${{ vars.REWARD_GRADE_5_CZK }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # --- 1. NAČTENÍ POSLEDNÍ KONTROLY (TRVALOST) ---
+      - name: Download last_check file
+        uses: actions/download-artifact@v4
+        with:
+          name: last-check
+          path: .
+        # ✅ OPRAVENO: Používáme continue-on-error, aby job neselhal, pokud artefakt neexistuje (při prvním běhu)
+        continue-on-error: true 
+          
+      - name: Install dependencies
+        run: npm install 
+
+      - name: Run payout script
+        run: node index.js
+
+      # --- 2. ULOŽENÍ POSLEDNÍ KONTROLY (TRVALOST) ---
+      - name: Upload last_check file
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-check
+          path: last_check.json
+          # if-no-files-found: ignore je v pořádku, ale doporučuji odstranit, pokud jste v index.js zajistil/a zápis i při 0 známkách
+          if-no-files-found: ignore
+          retention-days: 14
