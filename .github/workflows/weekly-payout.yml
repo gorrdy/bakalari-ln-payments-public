@@ -1,9 +1,11 @@
 name: Weekly Bakalari LN Payout
 
 on:
-  schedule:
-    # Spouštění každé pondělí ve 12:00 UTC (13:00 nebo 14:00 CET/CEST)
-   # - cron: "0 12 * * 1" 
+  # AUTOMATICKÝ PLÁN JE ZAKOMENTOVÁN! 
+  # Uživatelé si musí po nastavení Secrets tuto sekci odkomentovat (odstranit #)
+#  schedule:
+#    # Spouštění každé pondělí ve 12:00 UTC
+#    - cron: "0 12 * * 1"
   workflow_dispatch: # Povoluje ruční spuštění
 
 # GLOBÁLNÍ OPRÁVNĚNÍ: contents: write je pro jistotu zachováno, ale klíčové je použití PAT
