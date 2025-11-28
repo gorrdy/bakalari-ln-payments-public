@@ -5,10 +5,11 @@ on:
   # Uživatelé si musí po nastavení Secrets tuto sekci odkomentovat (odstranit #)
 #  schedule:
 #    # Spouštění každé pondělí ve 12:00 UTC
-#    - cron: "0 12 * * 1"
-  workflow_dispatch: # Povoluje ruční spuštění
+#    - cron: "0 12 * * 1" 
+    
+  workflow_dispatch: # Ruční spuštění je povoleno pro testování
 
-# GLOBÁLNÍ OPRÁVNĚNÍ: contents: write je pro jistotu zachováno, ale klíčové je použití PAT
+# ZÁKLADNÍ OPRÁVNĚNÍ JSOU NUTNÁ PRO FUNKCI WORKFLOW
 permissions:
   contents: write
 
@@ -16,24 +17,32 @@ jobs:
   payout:
     runs-on: ubuntu-latest
     
+    # ⚠️ ZDE SI MUSÍ UŽIVATEL NAHRADIT A NASTAVIT VLASTNÍ SECRETS A VARIABLES
     env:
-      # 🚀 KRITICKÁ ZMĚNA: Používáme Váš silnější PAT token pro přístup k Variables
+      # --- AUTORIZAČNÍ TOKEN (MUSÍ BÝT PAT s 'repo' a 'workflow' oprávněními) ---
       GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }} 
+      
       # --- BAKALÁŘI SECRETS ---
       BAKALARI_BASE_URL: ${{ secrets.BAKALARI_BASE_URL }}
       BAKALARI_USERNAME: ${{ secrets.BAKALARI_USERNAME }}
       BAKALARI_PASSWORD: ${{ secrets.BAKALARI_PASSWORD }}
+      
       # --- LNBITS SECRETS ---
       LNBITS_HOST: ${{ secrets.LNBITS_HOST }}
       LNBITS_WITHDRAW_KEY: ${{ secrets.LNBITS_WITHDRAW_KEY }}
+      
       # --- SMTP SECRETS ---
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASS: ${{ secrets.SMTP_PASS }}
       NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      
       # --- VARIABLES (VARS) ---
       EXCHANGE_RATE_API_URL: ${{ vars.EXCHANGE_RATE_API_URL }}
-      START_DATE: 2025-11-01
+      START_DATE: 2025-11-01 # Výchozí datum pro první běh
+      
+      # --- REWARD VARIABLES (Musí být nastaveno v GitHub Variables) ---
       REWARD_GRADE_1_CZK: ${{ vars.REWARD_GRADE_1_CZK }}
       REWARD_GRADE_2_CZK: ${{ vars.REWARD_GRADE_2_CZK }}
       REWARD_GRADE_3_CZK: ${{ vars.REWARD_GRADE_3_CZK }}
